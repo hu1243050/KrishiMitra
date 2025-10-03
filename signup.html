@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmPortal - Sign Up</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* CSS from the original code - kept for consistency */
+        :root {
+            --primary-green: #2E7D32;
+            --light-green: #4CAF50;
+            --hover-green: #1B5E20;
+            --bg-light: #F1F8E9;
+            --text-dark: #2E3D2E;
+            --border-light: #C8E6C9;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-light) 0%, #E8F5E8 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .auth-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(46, 125, 50, 0.15);
+            padding: 3rem 2.5rem;
+            width: 100%;
+            max-width: 450px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .auth-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(46, 125, 50, 0.05) 0%, transparent 70%);
+            z-index: 1;
+        }
+
+        .auth-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .auth-title {
+            color: var(--primary-green);
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            opacity: 0;
+            animation: slideInFromTop 0.6s ease forwards;
+        }
+
+        .auth-subtitle {
+            color: var(--text-dark);
+            font-size: 1rem;
+            opacity: 0.8;
+            opacity: 0;
+            animation: slideInFromTop 0.6s ease 0.1s forwards;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .form-label {
+            color: var(--primary-green);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .form-control {
+            border: 2px solid var(--border-light);
+            border-radius: 12px;
+            padding: 0.875rem 1rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: rgba(241, 248, 233, 0.3);
+            opacity: 0;
+            animation: slideInFromLeft 0.6s ease forwards;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 0.2rem rgba(46, 125, 50, 0.25);
+            background: white;
+        }
+
+        .form-control::placeholder {
+            color: #999;
+        }
+
+        .password-container {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--primary-green);
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: color 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            color: var(--hover-green);
+        }
+
+        .auth-btn {
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--light-green) 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            padding: 0.875rem 2rem;
+            width: 100%;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            animation: slideInFromBottom 0.6s ease 0.2s forwards;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(46, 125, 50, 0.3);
+            background: linear-gradient(135deg, var(--hover-green) 0%, var(--primary-green) 100%);
+        }
+
+        .auth-btn:active {
+            transform: translateY(0);
+        }
+
+        .auth-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .auth-toggle {
+            text-align: center;
+            margin-top: 2rem;
+            opacity: 0;
+            animation: fadeIn 0.6s ease 0.3s forwards;
+        }
+
+        .auth-toggle-text {
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-toggle-link {
+            color: var(--primary-green);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .auth-toggle-link:hover {
+            color: var(--hover-green);
+            text-decoration: underline;
+        }
+
+        .alert {
+            border-radius: 10px;
+            border: none;
+            margin-bottom: 1.5rem;
+            opacity: 0;
+            animation: slideInFromTop 0.4s ease forwards;
+        }
+
+        .alert-success {
+            background: rgba(76, 175, 80, 0.1);
+            color: var(--primary-green);
+            border-left: 4px solid var(--primary-green);
+        }
+
+        .alert-danger {
+            background: rgba(244, 67, 54, 0.1);
+            color: #d32f2f;
+            border-left: 4px solid #d32f2f;
+        }
+        
+        .form-check {
+            margin-bottom: 1.5rem;
+            opacity: 0;
+            animation: slideInFromLeft 0.6s ease 0.1s forwards;
+        }
+
+        .form-check-input:checked {
+            background-color: var(--primary-green);
+            border-color: var(--primary-green);
+        }
+
+        .form-check-label {
+            color: var(--text-dark);
+            font-size: 0.9rem;
+        }
+
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+            display: none;
+        }
+
+        @keyframes slideInFromTop {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideInFromLeft {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slideInFromBottom {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 576px) {
+            .auth-container { padding: 2rem 1.5rem; margin: 10px; }
+            .auth-title { font-size: 1.75rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-content">
+            <div class="auth-header">
+                <h1 class="auth-title">Join FarmPortal</h1>
+                <p class="auth-subtitle">Create your farmer account</p>
+            </div>
+
+            <div id="alertContainer"></div>
+
+            <form id="signUpForm">
+                <div class="form-group">
+                    <label for="fullName" class="form-label">
+                        <i class="bi bi-person"></i> Full Name
+                    </label>
+                    <input type="text" class="form-control" id="fullName" placeholder="Enter your full name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email" class="form-label">
+                        <i class="bi bi-envelope"></i> Email Address
+                    </label>
+                    <input type="email" class="form-control" id="email" placeholder="Enter your email address" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password" class="form-label">
+                        <i class="bi bi-lock"></i> Password
+                    </label>
+                    <div class="password-container">
+                        <input type="password" class="form-control" id="password" placeholder="Create a password (min 6 chars)" required>
+                        <button type="button" class="password-toggle" id="passwordToggle">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword" class="form-label">
+                        <i class="bi bi-lock-fill"></i> Confirm Password
+                    </label>
+                    <div class="password-container">
+                        <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm your password" required>
+                        <button type="button" class="password-toggle" id="confirmPasswordToggle">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="agreeTerms" required>
+                    <label class="form-check-label" for="agreeTerms">
+                        I agree to the <a href="#" class="auth-toggle-link">Terms of Service</a> and <a href="#" class="auth-toggle-link">Privacy Policy</a>
+                    </label>
+                </div>
+
+                <button type="submit" class="auth-btn" id="submitBtn">
+                    <span class="loading-spinner" id="loadingSpinner"></span>
+                    <span id="submitText">Create Account</span>
+                </button>
+            </form>
+
+            <div class="auth-toggle">
+                <p class="auth-toggle-text">Already have an account?</p>
+                <a href="signin.html" class="auth-toggle-link">Sign in here</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // === SUPABASE INITIALIZATION ===
+        const supabaseUrl = 'https://nqicnorwwztqdwjyodae.supabase.co'; // <-- REPLACE THIS
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5xaWNub3J3d3p0cWR3anlvZGFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3NzY4NDcsImV4cCI6MjA3NDM1Mjg0N30.qrbvcx0FRful2Lv3RcrevVmGGXKLJRDHU6-TX-uidKw'; // <-- REPLACE THIS
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // === DOM ELEMENTS ===
+        const signUpForm = document.getElementById('signUpForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const submitText = document.getElementById('submitText');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const alertContainer = document.getElementById('alertContainer');
+        
+        // === UTILITY FUNCTIONS ===
+        function setupPasswordToggle(toggleId, inputId) {
+            const toggle = document.getElementById(toggleId);
+            if (toggle) {
+                toggle.addEventListener('click', () => togglePasswordVisibility(inputId, toggleId));
+            }
+        }
+        
+        function togglePasswordVisibility(inputId, toggleId) {
+            const input = document.getElementById(inputId);
+            const toggle = document.getElementById(toggleId);
+            const icon = toggle.querySelector('i');
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'bi bi-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'bi bi-eye';
+            }
+        }
+        
+        function setLoading(loading) {
+            submitBtn.disabled = loading;
+            if (loading) {
+                loadingSpinner.style.display = 'inline-block';
+                submitText.textContent = 'Creating Account...';
+            } else {
+                submitText.textContent = 'Create Account';
+                loadingSpinner.style.display = 'none';
+            }
+        }
+
+        function showAlert(message, type) {
+            clearAlerts();
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.innerHTML = `
+                <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+                ${message}
+            `;
+            alertContainer.appendChild(alert);
+        }
+
+        function clearAlerts() {
+            alertContainer.innerHTML = '';
+        }
+
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        // === EVENT LISTENERS ===
+        setupPasswordToggle('passwordToggle', 'password');
+        setupPasswordToggle('confirmPasswordToggle', 'confirmPassword');
+
+        signUpForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearAlerts();
+            
+            const fullName = document.getElementById('fullName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const agreeTerms = document.getElementById('agreeTerms').checked;
+
+            // Simple client-side validation
+            if (!fullName || !email || !password || !confirmPassword) {
+                showAlert('Please fill in all fields.', 'danger');
+                return;
+            }
+
+            if (!isValidEmail(email)) {
+                showAlert('Please enter a valid email address.', 'danger');
+                return;
+            }
+
+            if (password.length < 6) {
+                showAlert('Password must be at least 6 characters long.', 'danger');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showAlert('Passwords do not match.', 'danger');
+                return;
+            }
+
+            if (!agreeTerms) {
+                showAlert('Please agree to the Terms of Service and Privacy Policy.', 'danger');
+                return;
+            }
+
+            setLoading(true);
+
+            try {
+                const { data, error } = await supabase.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: {
+                            full_name: fullName,
+                        }
+                    }
+                });
+
+                if (error) {
+                    showAlert(error.message, 'danger');
+                    return;
+                }
+
+                showAlert('Account created successfully! Please check your email to verify your account. Redirecting to Sign In...', 'success');
+                
+                // Clear the form
+                signUpForm.reset();
+                
+                // Redirect to the signin page after a short delay
+                setTimeout(() => {
+                    window.location.href = 'signin.html';
+                }, 3000);
+
+            } catch (error) {
+                showAlert('An unexpected error occurred. Please try again.', 'danger');
+            } finally {
+                setLoading(false);
+            }
+        });
+        
+        // Initialize form animations on load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Stagger form field animations
+            const formControls = document.querySelectorAll('.form-control');
+            formControls.forEach((control, index) => {
+                control.style.animationDelay = `${0.1 + index * 0.05}s`;
+            });
+        });
+    </script>
+</body>
+</html>

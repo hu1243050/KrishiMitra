@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KrishiMitra - Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary-green: #2E7D32;
+            --light-green: #4CAF50;
+            --hover-green: #1B5E20;
+            --bg-light: #F1F8E9;
+            --text-dark: #2E3D2E;
+            --border-light: #C8E6C9;
+            --gold-accent: #FF8F00;
+            --orange-accent: #FF6D00;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-light) 0%, #E8F5E8 100%);
+            min-height: 100vh;
+            color: var(--text-dark);
+        }
+
+        .header {
+            background: white;
+            box-shadow: 0 2px 20px rgba(46, 125, 50, 0.1);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-green) !important;
+        }
+
+        .nav-link {
+            color: var(--text-dark) !important;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary-green) !important;
+        }
+
+        .btn-logout {
+            background: #dc3545;
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-logout:hover {
+            background: #c82333;
+            color: white;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--light-green) 100%);
+            color: white;
+            padding: 3rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(46, 125, 50, 0.1);
+            transition: all 0.3s ease;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(46, 125, 50, 0.2);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--light-green) 100%);
+            color: white;
+            padding: 1.5rem;
+            border: none;
+        }
+
+        .card-header h3 {
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        .weather-location-section {
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid var(--border-light);
+        }
+
+        .location-display {
+            background: linear-gradient(135deg, var(--bg-light), #E8F5E8);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary-green);
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .location-display i {
+            color: var(--primary-green);
+            font-size: 1.3rem;
+        }
+
+        .weather-data-section {
+            padding-top: 1.5rem;
+        }
+
+        .weather-metric-enhanced {
+            background: linear-gradient(135deg, #ffffff, #f8fdf8);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 2px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+
+        .weather-metric-enhanced:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(46, 125, 50, 0.15);
+            border-color: var(--primary-green);
+        }
+
+        .weather-icon-circle {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary-green), var(--light-green));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.8rem;
+            flex-shrink: 0;
+        }
+
+        .weather-info {
+            flex-grow: 1;
+        }
+
+        .weather-info .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 0.2rem;
+        }
+
+        .weather-info .label {
+            font-size: 0.85rem;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .input-group-text {
+            border: 2px solid var(--border-light);
+            border-right: none;
+        }
+
+        #cityInput {
+            border: 2px solid var(--border-light);
+            border-left: none;
+        }
+
+        #cityInput:focus {
+            box-shadow: none;
+            border-color: var(--primary-green);
+        }
+
+        #crops .card-body {
+            padding: 2.5rem;
+            background: linear-gradient(135deg, #f8fdf8 0%, #ffffff 100%);
+        }
+
+        .crop-recommendation-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border-light);
+        }
+
+        .crop-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            border: 2px solid var(--border-light);
+            height: 100%;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.08);
+        }
+
+        .crop-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(46, 125, 50, 0.25);
+            border-color: var(--primary-green);
+        }
+
+        .crop-icon-wrapper {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 1.5rem;
+            background: linear-gradient(135deg, var(--bg-light), #E8F5E8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.4s ease;
+            border: 3px solid var(--border-light);
+        }
+
+        .crop-icon {
+            font-size: 3.5rem;
+        }
+
+        .crop-name {
+            font-weight: 700;
+            color: var(--primary-green);
+            margin-bottom: 0.75rem;
+            font-size: 1.4rem;
+        }
+
+        .crop-description {
+            font-size: 0.95rem;
+            color: #666;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        .crop-details {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 2px dashed var(--border-light);
+        }
+
+        .crop-detail-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: var(--bg-light);
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+        }
+
+        .crop-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: linear-gradient(135deg, var(--gold-accent), var(--orange-accent));
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        .crop-loading-state {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .crop-loading-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 2rem;
+            position: relative;
+        }
+
+        .crop-loading-icon::before {
+            content: '🌾';
+            font-size: 4rem;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: cropBounce 1.5s ease-in-out infinite;
+        }
+
+        @keyframes cropBounce {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+        }
+
+        .crop-loading-text {
+            color: var(--primary-green);
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .carousel-control-prev, .carousel-control-next {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary-green), var(--light-green));
+            border-radius: 50%;
+            opacity: 0.95;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .carousel-control-prev.hidden, .carousel-control-next.hidden {
+            display: none !important;
+        }
+
+        .btn-primary-custom {
+            background: var(--primary-green);
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary-custom:hover {
+            background: var(--hover-green);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 125, 50, 0.3);
+        }
+
+        .btn-location {
+            background: var(--gold-accent);
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+        }
+
+        .form-control {
+            border: 2px solid var(--border-light);
+            border-radius: 10px;
+            padding: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 0.2rem rgba(46, 125, 50, 0.1);
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--primary-green);
+            margin-bottom: 0.5rem;
+        }
+
+        .fertilizer-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .fertilizer-item {
+            background: var(--bg-light);
+            margin-bottom: 0.75rem;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-green);
+        }
+
+        .fertilizer-crop {
+            font-weight: 700;
+            color: var(--primary-green);
+        }
+
+        .video-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 3px 15px rgba(46, 125, 50, 0.1);
+        }
+
+        .video-title {
+            padding: 1rem;
+            font-weight: 600;
+            background: var(--bg-light);
+        }
+
+        .user-product-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 3px 15px rgba(46, 125, 50, 0.1);
+            height: 100%;
+        }
+
+        .product-image-small {
+            width: 100%;
+            height: 120px;
+            background: linear-gradient(135deg, #E8F5E8, #C8E6C9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+        }
+
+        .user-product-content {
+            padding: 1rem;
+        }
+
+        .product-category-small {
+            background: var(--bg-light);
+            color: var(--primary-green);
+            font-size: 0.75rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+        }
+
+        .product-title-small {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .product-price-small {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary-green);
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+            padding: 0.2rem 0.6rem;
+            border-radius: 10px;
+            font-size: 0.8rem;
+        }
+
+        .product-actions-small {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .btn-edit {
+            flex: 1;
+            background: var(--primary-green);
+            border: none;
+            color: white;
+            padding: 0.4rem;
+            border-radius: 6px;
+        }
+
+        .btn-delete {
+            background: #dc3545;
+            border: none;
+            color: white;
+            padding: 0.4rem;
+            border-radius: 6px;
+            min-width: 35px;
+        }
+
+        .loading-spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid var(--border-light);
+            border-top: 3px solid var(--primary-green);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .ai-chat-container {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 1.5rem;
+            min-height: 400px;
+            max-height: 500px;
+            overflow-y: auto;
+            border: 2px solid var(--border-light);
+        }
+
+        .ai-message {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .ai-message-bot {
+            align-self: flex-start;
+        }
+
+        .ai-message-user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .ai-message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .ai-message-bot .ai-message-avatar {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .ai-message-user .ai-message-avatar {
+            background: linear-gradient(135deg, var(--primary-green), var(--light-green));
+            color: white;
+        }
+
+        .ai-message-text {
+            background: white;
+            padding: 1rem 1.25rem;
+            border-radius: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            line-height: 1.6;
+        }
+
+        .ai-message-user .ai-message-text {
+            background: linear-gradient(135deg, var(--primary-green), var(--light-green));
+            color: white;
+        }
+
+        .btn-ai-send {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+        }
+
+        .btn-quick-question {
+            background: white;
+            border: 2px solid var(--border-light);
+            color: var(--text-dark);
+            padding: 0.4rem 0.9rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        .alert-info-custom {
+            background: #cce7ff;
+            color: #004085;
+            border-left: 4px solid #007bff;
+            padding: 1rem;
+            border-radius: 10px;
+        }
+
+        .alert-success-custom {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .alert-error-custom {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .info-banner {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--gold-accent);
+            margin-bottom: 1.5rem;
+        }
+
+        .info-banner p {
+            margin: 0;
+            color: #856404;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <nav class="navbar navbar-expand-lg">
+                <a class="navbar-brand" href="dashboard.html">
+                    <i class="bi bi-flower1"></i> KrishiMitra
+                </a>
+                
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto align-items-center">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="dashboard.html">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="market.html">
+                                <i class="bi bi-shop"></i> Marketplace
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#weather">
+                                <i class="bi bi-cloud-sun"></i> Weather
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#crops">
+                                <i class="bi bi-flower2"></i> Crops
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#expert">
+                                <i class="bi bi-person-check"></i> Expert
+                            </a>
+                        </li>
+                        <li class="nav-item ms-2">
+                            <button class="btn btn-logout" onclick="logout()">
+                                <i class="bi bi-box-arrow-right"></i> Logout
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1><i class="bi bi-house-heart"></i> Welcome to KrishiMitra</h1>
+                    <p>Your comprehensive farming companion for weather updates, crop guidance, and expert consultation</p>
+                </div>
+                <div class="col-lg-4 text-end">
+                    <div id="currentDateTime" class="fs-5 opacity-75"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="container">
+        <div id="weather" class="dashboard-card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0"><i class="bi bi-cloud-sun"></i> Weather Information</h3>
+                    <span id="lastUpdated" class="small opacity-75"></span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="weather-location-section mb-4">
+                    <div class="row align-items-center mb-3">
+                        <div class="col-12">
+                            <div id="location" class="location-display">
+                                <i class="bi bi-geo-alt-fill"></i>
+                                <span>Select your location to get weather updates</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-2">
+                        <div class="col-md-7">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white">
+                                    <i class="bi bi-search"></i>
+                                </span>
+                                <input type="text" id="cityInput" class="form-control" placeholder="Enter city name (e.g., Mumbai, Delhi)" />
+                            </div>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="d-flex gap-2">
+                                <button onclick="getWeatherByCity()" class="btn btn-primary-custom flex-grow-1">
+                                    <i class="bi bi-search"></i> Search
+                                </button>
+                                <button onclick="getLiveLocation()" class="btn btn-location">
+                                    <i class="bi bi-crosshair"></i> GPS
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="weather-data-section">
+                    <div class="row g-3">
+                        <div class="col-6 col-md-3">
+                            <div class="weather-metric-enhanced">
+                                <div class="weather-icon-circle">
+                                    <i class="bi bi-thermometer-half"></i>
+                                </div>
+                                <div class="weather-info">
+                                    <div class="value" id="temp">--</div>
+                                    <div class="label">Temperature</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="weather-metric-enhanced">
+                                <div class="weather-icon-circle">
+                                    <i class="bi bi-cloud"></i>
+                                </div>
+                                <div class="weather-info">
+                                    <div class="value" id="condition">--</div>
+                                    <div class="label">Condition</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="weather-metric-enhanced">
+                                <div class="weather-icon-circle">
+                                    <i class="bi bi-droplet-half"></i>
+                                </div>
+                                <div class="weather-info">
+                                    <div class="value" id="humidity">--</div>
+                                    <div class="label">Humidity</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="weather-metric-enhanced">
+                                <div class="weather-icon-circle">
+                                    <i class="bi bi-wind"></i>
+                                </div>
+                                <div class="weather-info">
+                                    <div class="value" id="wind">--</div>
+                                    <div class="label">Wind Speed</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="crops" class="dashboard-card">
+            <div class="card-header">
+                <h3><i class="bi bi-flower2"></i> Recommended Crops</h3>
+            </div>
+            <div class="card-body">
+                <div id="cropCarousel" class="carousel slide">
+                    <div class="carousel-inner" id="cropCarouselInner">
+                        <div class="carousel-item active">
+                            <div class="row g-4">
+                                <div class="col-md-4">
+                                    <div class="crop-card">
+                                        <div class="crop-icon-wrapper">
+                                            <div class="crop-icon">🌾</div>
+                                        </div>
+                                        <div class="crop-name">Select Weather</div>
+                                        <div class="crop-description">Get weather data to see crop recommendations</div>
+                                        <div class="crop-details">
+                                            <div class="crop-detail-item">
+                                                <div>🌡️</div>
+                                                <div>All Temps</div>
+                                            </div>
+                                            <div class="crop-detail-item">
+                                                <div>📅</div>
+                                                <div>All Seasons</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="carousel-control-prev hidden" data-bs-target="#cropCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon"></span>
+                    </button>
+                    <button class="carousel-control-next hidden" data-bs-target="#cropCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="uploaded-crops" class="dashboard-card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3><i class="bi bi-box-seam"></i> Your Uploaded Products</h3>
+                    <a href="market.html" class="btn" style="background: var(--gold-accent); color: white; border-radius: 20px;">
+                        <i class="bi bi-plus-circle"></i> Add New Product
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row g-3" id="userProductsGrid"></div>
+                <div id="noProductsState" class="text-center py-5" style="display: none;">
+                    <i class="bi bi-box" style="font-size: 4rem; color: var(--border-light);"></i>
+                    <h5>No Products Listed Yet</h5>
+                    <p class="text-muted">Start selling your crops on KrishiMitra marketplace</p>
+                    <a href="market.html" class="btn btn-primary-custom">
+                        <i class="bi bi-plus-circle"></i> List Your First Product
+                    </a>
+                </div>
+                <div id="productsLoadingState" class="text-center py-4" style="display: none;">
+                    <div class="loading-spinner mx-auto"></div>
+                    <p class="mt-2">Loading products...</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="fertiliser" class="dashboard-card">
+            <div class="card-header">
+                <h3><i class="bi bi-droplet"></i> Fertilizer Guidance</h3>
+            </div>
+            <div class="card-body">
+                <ul class="fertilizer-list">
+                    <li class="fertilizer-item">
+                        <span class="fertilizer-crop">Rice:</span> Use Urea + DAP during early growth stage
+                    </li>
+                    <li class="fertilizer-item">
+                        <span class="fertilizer-crop">Wheat:</span> Apply NPK in 2:3:2 ratio
+                    </li>
+                    <li class="fertilizer-item">
+                        <span class="fertilizer-crop">Maize:</span> Nitrogen-rich fertilizers for growth
+                    </li>
+                    <li class="fertilizer-item">
+                        <span class="fertilizer-crop">Cotton:</span> Balanced NPK + extra Potassium
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="ai-assistant" class="dashboard-card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3><i class="bi bi-robot"></i> AI Farming Assistant</h3>
+                    <span class="badge" style="background: linear-gradient(135deg, #667eea, #764ba2); padding: 0.5rem 1rem; border-radius: 20px;">Powered by AI</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div style="background: linear-gradient(135deg, #667eea15, #764ba215); padding: 1rem 1.5rem; border-radius: 12px; border-left: 4px solid #667eea; margin-bottom: 1.5rem;">
+                    <p style="margin: 0;">
+                        <i class="bi bi-lightbulb text-warning me-2"></i>
+                        Ask our AI assistant about farming, crops, diseases, and best practices!
+                    </p>
+                </div>
+
+                <div id="aiChatContainer" class="ai-chat-container mb-3">
+                    <div id="aiChatMessages">
+                        <div class="ai-message ai-message-bot">
+                            <div class="ai-message-avatar">
+                                <i class="bi bi-robot"></i>
+                            </div>
+                            <div>
+                                <div class="ai-message-text">
+                                    Hello! I'm your AI farming assistant. I can help with crop diseases, fertilizers, pest control, and more!
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-group mb-3">
+                    <textarea id="aiQuestionInput" class="form-control" placeholder="Ask me anything about farming..." rows="2"></textarea>
+                    <button onclick="sendAIQuestion()" class="btn btn-ai-send" id="aiSendBtn">
+                        <i class="bi bi-send-fill"></i> Send
+                    </button>
+                </div>
+
+                <div>
+                    <small class="text-muted d-block mb-2">Quick questions:</small>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button class="btn btn-quick-question btn-sm" onclick="setQuickQuestion('How to identify wheat leaf rust?')">Wheat leaf rust</button>
+                        <button class="btn btn-quick-question btn-sm" onclick="setQuickQuestion('Best time to plant tomatoes?')">Tomato planting</button>
+                        <button class="btn btn-quick-question btn-sm" onclick="setQuickQuestion('Organic pest control methods?')">Pest control</button>
+                    </div>
+                </div>
+
+                <div id="aiApiKeyNotice" class="alert-info-custom mt-3">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Setup Required:</strong> Add your OpenAI API key in the code to enable AI Assistant.
+                </div>
+            </div>
+        </div>
+
+        <div id="expert" class="dashboard-card">
+            <div class="card-header">
+                <h3><i class="bi bi-person-check"></i> Expert Consultation</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-banner">
+                    <p>
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Connect with Agricultural Experts:</strong> Submit your farming queries and our experts will assist you
+                    </p>
+                </div>
+                <form id="expertForm">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="farmerName" class="form-label"><i class="bi bi-person"></i> Your Name</label>
+                            <input type="text" id="farmerName" name="name" class="form-control" placeholder="Enter your full name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="farmerPhone" class="form-label"><i class="bi bi-telephone"></i> Phone Number</label>
+                            <input type="tel" id="farmerPhone" name="phone" class="form-control" placeholder="Enter your contact number" pattern="[0-9]{10}" required>
+                            <small class="text-muted">10-digit mobile number</small>
+                        </div>
+                        <div class="col-12">
+                            <label for="farmerQuery" class="form-label"><i class="bi bi-chat-dots"></i> Your Query</label>
+                            <textarea id="farmerQuery" name="message" rows="4" class="form-control" placeholder="Describe your farming question in detail..." required></textarea>
+                            <small class="text-muted">Be specific about your concern for better assistance</small>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary-custom" id="expertSubmitBtn">
+                                <span id="submitText"><i class="bi bi-send"></i> Submit Query</span>
+                                <span id="submitLoader" style="display: none;"><div class="loading-spinner me-2"></div> Submitting...</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                <div id="formMessage" class="mt-3" style="display: none;"></div>
+            </div>
+        </div>
+
+        <div id="videos" class="dashboard-card">
+            <div class="card-header">
+                <h3><i class="bi bi-play-circle"></i> Educational Videos</h3>
+            </div>
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <div class="video-card">
+                            <div class="ratio ratio-16x9">
+                                <iframe src="https://www.youtube.com/embed/rtjDc5irNcs" frameborder="0" allowfullscreen></iframe>
+                            </div>
+                            <div class="video-title">
+                                <i class="bi bi-play-fill text-success"></i> Modern Wheat Sowing Techniques
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="video-card">
+                            <div class="ratio ratio-16x9">
+                                <iframe src="https://www.youtube.com/embed/Xej22GsLLQA" frameborder="0" allowfullscreen></iframe>
+                            </div>
+                            <div class="video-title">
+                                <i class="bi bi-play-fill text-success"></i> Drip Irrigation Setup
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const supabaseUrl = "https://nqicnorwwztqdwjyodae.supabase.co";
+        const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5xaWNub3J3d3p0cWR3anlvZGFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3NzY4NDcsImV4cCI6MjA3NDM1Mjg0N30.qrbvcx0FRful2Lv3RcrevVmGGXKLJRDHU6-TX-uidKw";
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // OpenAI API Key for AI Assistant
+        const CHATGPT_API_KEY = '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';
+        const CHATGPT_API_URL = 'https://api.openai.com/v1/chat/completions';
+
+        const weatherApiKey = "fa2adee30ea24e40b2271416250909";
+
+        async function checkAuth() {
+            try {
+                const { data: { user }, error } = await supabase.auth.getUser();
+                if (error || !user) {
+                    window.location.href = "signin.html";
+                    return;
+                }
+                const heroTitle = document.querySelector('.hero h1');
+                if (user.user_metadata?.name) {
+                    heroTitle.innerHTML = `<i class="bi bi-house-heart"></i> Welcome back, ${user.user_metadata.name}!`;
+                }
+                loadUserProducts();
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                window.location.href = "signin.html";
+            }
+        }
+
+        async function logout() {
+            try {
+                await supabase.auth.signOut();
+                window.location.href = "signin.html";
+            } catch (error) {
+                showMessage('Logout failed', 'error');
+            }
+        }
+
+        async function getWeather(query, isCoords = false) {
+            try {
+                let url;
+                if (isCoords) {
+                    url = `https://api.weatherapi.com/v1/current.json?key=${weatherApiKey}&q=${query.lat},${query.lon}`;
+                } else {
+                    url = `https://api.weatherapi.com/v1/current.json?key=${weatherApiKey}&q=${encodeURIComponent(query)}`;
+                }
+                
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Weather fetch failed');
+                
+                const data = await response.json();
+                updateWeatherDisplay(data);
+                showCrops(data.current.temp_c);
+                showMessage(`Weather updated for ${data.location.name}`, 'success');
+            } catch (error) {
+                showMessage('Weather fetch failed', 'error');
+            }
+        }
+
+        function updateWeatherDisplay(data) {
+            document.getElementById("location").innerHTML = `<i class="bi bi-geo-alt-fill"></i><span>${data.location.name}, ${data.location.country}</span>`;
+            document.getElementById("temp").textContent = `${Math.round(data.current.temp_c)}°C`;
+            document.getElementById("condition").textContent = data.current.condition.text;
+            document.getElementById("humidity").textContent = `${data.current.humidity}%`;
+            document.getElementById("wind").textContent = `${Math.round(data.current.wind_kph)} km/h`;
+            document.getElementById('lastUpdated').textContent = `Updated: ${new Date().toLocaleTimeString()}`;
+        }
+
+        function getWeatherByCity() {
+            const city = document.getElementById("cityInput").value.trim();
+            if (!city) {
+                showMessage('Please enter a city name', 'error');
+                return;
+            }
+            getWeather(city, false);
+        }
+
+        function getLiveLocation() {
+            if (!navigator.geolocation) {
+                showMessage('Geolocation not supported', 'error');
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(
+                position => {
+                    getWeather({
+                        lat: position.coords.latitude.toFixed(4),
+                        lon: position.coords.longitude.toFixed(4)
+                    }, true);
+                },
+                () => showMessage('Location access denied', 'error')
+            );
+        }
+
+        const cropDatabase = [
+            {name: "Rice", temp: [20, 35], season: "Kharif", icon: "🌾", description: "High yield staple crop"},
+            {name: "Wheat", temp: [15, 25], season: "Rabi", icon: "🌾", description: "Cool season crop"},
+            {name: "Maize", temp: [25, 35], season: "Kharif", icon: "🌽", description: "Summer crop"},
+            {name: "Cotton", temp: [27, 40], season: "Kharif", icon: "🌿", description: "Cash crop"},
+        ];
+
+        function showCrops(temperature) {
+            const suitable = cropDatabase.filter(crop => temperature >= crop.temp[0] && temperature <= crop.temp[1]);
+            const displayCrops = suitable.length > 0 ? suitable.slice(0, 3) : cropDatabase.slice(0, 3);
+            
+            const carouselInner = document.getElementById("cropCarouselInner");
+            carouselInner.innerHTML = `
+                <div class="carousel-item active">
+                    <div class="row g-4">
+                        ${displayCrops.map(crop => `
+                            <div class="col-md-4">
+                                <div class="crop-card">
+                                    <div class="crop-badge">Recommended</div>
+                                    <div class="crop-icon-wrapper"><div class="crop-icon">${crop.icon}</div></div>
+                                    <div class="crop-name">${crop.name}</div>
+                                    <div class="crop-description">${crop.description}</div>
+                                    <div class="crop-details">
+                                        <div class="crop-detail-item"><div>🌡️</div><div>${crop.temp[0]}-${crop.temp[1]}°C</div></div>
+                                        <div class="crop-detail-item"><div>📅</div><div>${crop.season}</div></div>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        async function loadUserProducts() {
+            const loadingState = document.getElementById('productsLoadingState');
+            const noProductsState = document.getElementById('noProductsState');
+            const productsGrid = document.getElementById('userProductsGrid');
+            
+            try {
+                loadingState.style.display = 'block';
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) return;
+                
+                const { data: products } = await supabase
+                    .from('marketplace_products')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .order('created_at', { ascending: false });
+                
+                loadingState.style.display = 'none';
+                
+                if (!products || products.length === 0) {
+                    noProductsState.style.display = 'block';
+                    return;
+                }
+                
+                const categoryIcons = {grains: '🌾', vegetables: '🥕', fruits: '🍎', dairy: '🥛'};
+                productsGrid.innerHTML = products.map(p => `
+                    <div class="col-md-4">
+                        <div class="user-product-card">
+                            <div class="product-image-small">${categoryIcons[p.category] || '🌾'}</div>
+                            <div class="user-product-content">
+                                <span class="product-category-small">${p.category}</span>
+                                <div class="product-title-small">${p.name}</div>
+                                <div class="product-price-small">₹${p.price}/${p.unit}</div>
+                                <span class="status-active">Active</span>
+                                <div class="product-actions-small">
+                                    <button class="btn-edit" onclick="editProduct('${p.id}')"><i class="bi bi-pencil"></i> Edit</button>
+                                    <button class="btn-delete" onclick="deleteProduct('${p.id}')"><i class="bi bi-trash"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                loadingState.style.display = 'none';
+                noProductsState.style.display = 'block';
+            }
+        }
+
+        async function deleteProduct(productId) {
+            if (!confirm('Delete this product?')) return;
+            try {
+                await supabase.from('marketplace_products').delete().eq('id', productId);
+                showMessage('Product deleted', 'success');
+                loadUserProducts();
+            } catch (error) {
+                showMessage('Delete failed', 'error');
+            }
+        }
+
+        function editProduct(productId) {
+            localStorage.setItem('editProductId', productId);
+            window.location.href = 'market.html';
+        }
+
+        function setQuickQuestion(question) {
+            document.getElementById('aiQuestionInput').value = question;
+        }
+
+        async function sendAIQuestion() {
+            const input = document.getElementById('aiQuestionInput');
+            const question = input.value.trim();
+            
+            if (!question) {
+                showMessage('Please enter a question', 'warning');
+                return;
+            }
+
+            if (!CHATGPT_API_KEY || CHATGPT_API_KEY === 'YOUR_API_KEY_HERE') {
+                showMessage('Please configure your API key', 'error');
+                return;
+            }
+
+            addAIMessage(question, 'user');
+            input.value = '';
+
+            try {
+                const response = await fetch(CHATGPT_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${CHATGPT_API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: 'gpt-3.5-turbo',
+                        messages: [{
+                            role: 'system',
+                            content: 'You are an agricultural advisor helping Indian farmers with practical advice.'
+                        }, {
+                            role: 'user',
+                            content: question
+                        }],
+                        max_tokens: 500
+                    })
+                });
+
+                const data = await response.json();
+                addAIMessage(data.choices[0].message.content, 'bot');
+            } catch (error) {
+                addAIMessage('Sorry, I encountered an error. Please try again.', 'bot');
+            }
+        }
+
+        function addAIMessage(text, sender) {
+            const container = document.getElementById('aiChatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `ai-message ai-message-${sender}`;
+            messageDiv.innerHTML = `
+                <div class="ai-message-avatar"><i class="bi bi-${sender === 'bot' ? 'robot' : 'person-circle'}"></i></div>
+                <div><div class="ai-message-text">${text}</div></div>
+            `;
+            container.appendChild(messageDiv);
+            document.getElementById('aiChatContainer').scrollTop = 9999;
+        }
+
+        // FIXED: Expert Consultation Form - Now saves to Supabase
+        document.getElementById('expertForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitText = document.getElementById('submitText');
+            const submitLoader = document.getElementById('submitLoader');
+            const submitBtn = document.getElementById('expertSubmitBtn');
+            const formMessage = document.getElementById('formMessage');
+            
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitText.style.display = 'none';
+            submitLoader.style.display = 'inline-flex';
+            
+            try {
+                // Get current user
+                const { data: { user } } = await supabase.auth.getUser();
+                
+                if (!user) {
+                    throw new Error('User not authenticated');
+                }
+                
+                // Get form data
+                const name = document.getElementById('farmerName').value.trim();
+                const phone = document.getElementById('farmerPhone').value.trim();
+                const message = document.getElementById('farmerQuery').value.trim();
+                
+                // Insert into Supabase
+                const { data, error } = await supabase
+                    .from('expert_queries')
+                    .insert([
+                        {
+                            user_id: user.id,
+                            name: name,
+                            phone: phone,
+                            message: message,
+                            status: 'pending'
+                        }
+                    ]);
+                
+                if (error) throw error;
+                
+                // Show success message
+                formMessage.innerHTML = `
+                    <div class="alert-success-custom">
+                        <i class="bi bi-check-circle me-2"></i>
+                        <strong>Query Submitted Successfully!</strong> Our agricultural experts will contact you soon at ${phone}.
+                    </div>
+                `;
+                formMessage.style.display = 'block';
+                
+                // Reset form
+                this.reset();
+                
+                // Hide success message after 5 seconds
+                setTimeout(() => {
+                    formMessage.style.display = 'none';
+                }, 5000);
+                
+            } catch (error) {
+                console.error('Error submitting query:', error);
+                
+                // Show error message
+                formMessage.innerHTML = `
+                    <div class="alert-error-custom">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Submission Failed!</strong> ${error.message || 'Please try again later.'}
+                    </div>
+                `;
+                formMessage.style.display = 'block';
+                
+                // Hide error message after 5 seconds
+                setTimeout(() => {
+                    formMessage.style.display = 'none';
+                }, 5000);
+            } finally {
+                // Re-enable button and hide loading
+                submitBtn.disabled = false;
+                submitText.style.display = 'inline-flex';
+                submitLoader.style.display = 'none';
+            }
+        });
+
+        function updateDateTime() {
+            const elem = document.getElementById('currentDateTime');
+            if (elem) {
+                elem.textContent = new Date().toLocaleDateString('en-US', {
+                    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                });
+            }
+        }
+
+        function showMessage(message, type) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `position:fixed;top:20px;right:20px;z-index:9999;padding:1rem 1.5rem;border-radius:10px;color:white;background:${type==='success'?'#28a745':type==='warning'?'#ffc107':'#dc3545'};box-shadow:0 4px 12px rgba(0,0,0,0.2);font-weight:500;`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            updateDateTime();
+            setInterval(updateDateTime, 60000);
+            
+            document.getElementById('cityInput').addEventListener('keypress', e => {
+                if (e.key === 'Enter') getWeatherByCity();
+            });
+        });
+
+        console.log('KrishiMitra Dashboard loaded - Expert Consultation now saves to Supabase!');
+    </script>
+</body>
+</html>

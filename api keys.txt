@@ -1,0 +1,5 @@
+
+        const weatherApiKey = "fa2adee30ea24e40b2271416250909";
+                const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5xaWNub3J3d3p0cWR3anlvZGFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3NzY4NDcsImV4cCI6MjA3NDM1Mjg0N30.qrbvcx0FRful2Lv3RcrevVmGGXKLJRDHU6-TX-uidKw";
+        const supabaseUrl = "https://nqicnorwwztqdwjyodae.supabase.co";
+
